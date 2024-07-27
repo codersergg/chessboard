@@ -7,23 +7,20 @@ class Chessboard(
 
     init {
         board[startPosition.x][startPosition.y] = 1
+        println("Start $startPosition")
     }
 
     fun findSolution(currentPosition: Position = startPosition, stepNumber: Int = 1): Boolean {
-        if (stepNumber == size * size) {
-            return true
-        }
+        if (stepNumber == size * size) return true
 
-        for (move in figureSteps) {
-            val nextX = currentPosition.x + move.x
-            val nextY = currentPosition.y + move.y
-            if (isValidPosition(nextX, nextY) && board[nextX][nextY] == -1) {
-                board[nextX][nextY] = stepNumber + 1
-                if (findSolution(Position(nextX, nextY), stepNumber + 1)) {
-                    return true
-                }
-                board[nextX][nextY] = -1
-            }
+        val validSteps = figureSteps
+            .map { Position(currentPosition.x + it.x, currentPosition.y + it.y) }
+            .filter { isValidStep(it.x, it.y) }
+
+        for (move in validSteps) {
+            board[move.x][move.y] = stepNumber + 1
+            if (findSolution(Position(move.x, move.y), stepNumber + 1)) return true
+            board[move.x][move.y] = -1
         }
         return false
     }
@@ -37,7 +34,11 @@ class Chessboard(
         }
     }
 
-    private fun isValidPosition(x: Int, y: Int): Boolean = x in 0..<size && y in 0..<size
+    private fun isValidStep(nextX: Int, nextY: Int) =
+        isValidPosition(nextX, nextY) && board[nextX][nextY] == -1
+
+    private fun isValidPosition(x: Int, y: Int): Boolean =
+        x in 0..<size && y in 0..<size
 }
 
 data class Position(val x: Int, val y: Int)
@@ -55,12 +56,10 @@ val horseSteps = listOf(
 
 fun main() {
     val chessboardSize = 8
-    val startPosition = Position(0, 0)
+    val startPosition = Position(2, 1)
     val chessboard = Chessboard(chessboardSize, startPosition, horseSteps)
 
-    if (chessboard.findSolution()) {
-        chessboard.print()
-    } else {
-        println("No solution exists from position $startPosition")
-    }
+    if (chessboard.findSolution()) chessboard.print()
+    else println("No solution exists from $startPosition")
+
 }
